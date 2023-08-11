@@ -10,7 +10,8 @@
   "author": "dlevak",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongodb": "^5.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.10",
