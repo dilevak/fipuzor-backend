@@ -1,12 +1,23 @@
 import express from 'express';
 import connect from './db.js';
+import { createCard } from './cardController.js';
+//Bcrypt library ya kriptiranje passworda
+import bcrypt from 'bcrypt';
+
 
 const router = express.Router();
+
+//AddCard ruta
+router.post('/addcard', (req, res) => {
+  console.log('Received a request to add a card:', req.body); // Log the request body
+  createCard(req, res); // Delegate the request handling to your createCard function
+});
 
 //Login ruta
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  let client; // Deklaracija client varijable
+  let client;
+
   try {
     console.log('Attempting login for:', username);
 
@@ -14,11 +25,17 @@ router.post('/login', async (req, res) => {
     const db = client.db('fipuzor');
     const usersCollection = db.collection('users');
 
-    const user = await usersCollection.findOne({ username, password });
+    const user = await usersCollection.findOne({ username });
 
     if (user) {
-      console.log('Login successful for:', username);
-      res.json({ success: true });
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (isPasswordValid) {
+        console.log('Login successful for:', username);
+        res.json({ success: true });
+      } else {
+        console.log('Login failed for:', username);
+        res.json({ success: false, message: 'Invalid credentials' });
+      }
     } else {
       console.log('Login failed for:', username);
       res.json({ success: false, message: 'Invalid credentials' });
@@ -53,11 +70,14 @@ router.post('/signup', async (req, res) => {
       return;
     }
 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Create a new user document
     const newUser = {
       username,
       email,
-      password,
+      password: hashedPassword,
     };
 
     // Insert the new user into the database

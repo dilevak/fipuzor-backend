@@ -1,7 +1,7 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
 //dodaj user i pass za konekciju na prije pokretanja
-const uri = "mongodb+srv://user:password@cluster-fipuzor.11alf6u.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://admin:admin@cluster-fipuzor.11alf6u.mongodb.net/?retryWrites=true&w=majority";
 
 export async function connect() {
   const client = new MongoClient(uri, {
