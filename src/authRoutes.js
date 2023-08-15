@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (isPasswordValid) {
         console.log('Login successful for:', username);
-        res.json({ success: true });
+        res.json({ success: true, username: user.username }); //dodavanje username-a u odgovor
       } else {
         console.log('Login failed for:', username);
         res.json({ success: false, message: 'Invalid credentials' });
