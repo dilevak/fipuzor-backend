@@ -3,6 +3,7 @@ import connect from './db.js';
 import { createCard } from './cardController.js';
 //Bcrypt library za kriptiranje passworda
 import bcrypt from 'bcrypt';
+import { ObjectId } from 'mongodb'; // Add this import for ObjectId
 
 
 const router = express.Router();
@@ -149,6 +150,109 @@ router.post('/signup', async (req, res) => {
     if (client) {
       client.close();
     }
+  }
+});
+
+//Search friends po mailu ruta
+router.get('/search-friends/:email', async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const client = await connect();
+    const db = client.db('fipuzor');
+    const usersCollection = db.collection('users');
+
+    const results = await usersCollection.find({ email }).toArray();
+    client.close();
+
+    res.json({ success: true, results });
+  } catch (error) {
+    console.error('An error occurred:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while connecting' });
+  }
+});
+
+// AddFriend ruta i kreacija nove kolekcije u db
+router.post('/add-friend', async (req, res) => {
+  const { userID, friendEmail } = req.body;
+
+  try {
+    console.log('Adding friend:', userID, friendEmail);
+
+    const client = await connect();
+    const db = client.db('fipuzor');
+    const friendsCollection = db.collection('friends');
+    const usersCollection = db.collection('users');
+
+    //Pronadji frendov ObjectID trayeci po mailu
+    const friend = await usersCollection.findOne({ email: friendEmail });
+    if (!friend) {
+      console.log('Friend not found');
+      res.json({ success: false, message: 'Friend not found' });
+      return;
+    }
+
+    console.log('Friend found:', friend);
+
+    //Dodaj u bazu
+    const result = await friendsCollection.insertOne({
+      user1: new ObjectId(userID),
+      user2: friend._id, //Koristi prondeni ObjectID iz maila
+    });
+
+    client.close();
+
+    if (result.acknowledged) {
+      console.log('Friend added successfully:', result.insertedId);
+      res.json({ success: true, message: 'Friend added successfully' });
+    } else {
+      console.log('Failed to add friend:', result);
+      res.json({ success: false, message: 'Failed to add friend' });
+    }
+  } catch (error) {
+    console.error('An error occurred:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while connecting' });
+  }
+});
+
+
+
+
+  //Ruta za dohvacanje friend liste
+  router.get('/friend-list/:userID', async (req, res) => {
+  const { userID } = req.params;
+
+  try {
+    const client = await connect();
+    const db = client.db('fipuzor');
+    const friendsCollection = db.collection('friends');
+
+    const userFriends = await friendsCollection.find({
+      $or: [{ user1: new ObjectId(userID) }, { user2: new ObjectId(userID) }],
+    }).toArray();
+
+    //Kreiraj array za storanje friend IDs
+    const friendIDs = [];
+
+    //Ekstraktanje friend IDs iz userFriends arraya
+    userFriends.forEach((friendship) => {
+      if (friendship.user1.toString() === userID) {
+        friendIDs.push(friendship.user2);
+      } else {
+        friendIDs.push(friendship.user1);
+      }
+    });
+
+    //Dohvati detalje prijatelja iz users kolekcije pon friend ID-u
+    const usersCollection = db.collection('users');
+    const friends = await usersCollection.find({ _id: { $in: friendIDs } }).toArray();
+
+    client.close();
+
+    res.json({ success: true, friends });
+  } catch (error) {
+    console.error('An error occurred:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while connecting' });
   }
 });
 
