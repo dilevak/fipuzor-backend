@@ -215,9 +215,6 @@ router.post('/add-friend', async (req, res) => {
   }
 });
 
-
-
-
   //Ruta za dohvacanje friend liste
   router.get('/friend-list/:userID', async (req, res) => {
   const { userID } = req.params;
@@ -253,6 +250,61 @@ router.post('/add-friend', async (req, res) => {
   } catch (error) {
     console.error('An error occurred:', error);
     res.status(500).json({ success: false, message: 'An error occurred while connecting' });
+  }
+});
+
+//Ruta za share kartice s nekim iz frend liste
+router.post('/share-card', async (req, res) => {
+  const { username, friendUsername, cardId } = req.body;
+
+  try {
+    const client = await connect();
+    const db = client.db('fipuzor');
+    const usersCollection = db.collection('users');
+    const cardsCollection = db.collection('cards');
+    const sharedCardsCollection = db.collection('shared_cards');
+
+    const user = await usersCollection.findOne({ username });
+    const friend = await usersCollection.findOne({ username: friendUsername });
+
+    if (!user || !friend) {
+      res.json({ success: false, message: 'User or friend not found' });
+      return;
+    }
+
+    // Search for the card using the cardNumber
+    console.log('Searching for card with cardNumber:', cardId);
+    const card = await cardsCollection.findOne({ cardNumber: cardId });
+
+    //const cardNumberToFind = '12345678';
+    //const directQueryCard = await cardsCollection.findOne({ cardNumber: cardNumberToFind });
+    //console.log('Card found by direct query:', directQueryCard);
+
+    if (!card) {
+      res.json({ success: false, message: 'Card not found' });
+     return;
+    }
+    //Dodaj novu karticu u shared_cards collection
+    const sharedCardInfo = {
+      userId: user._id,
+      friendId: friend._id,
+      cardId: card._id, // Use card's ObjectId from the cards collection
+    };
+    
+    const insertionResult = await sharedCardsCollection.insertOne(sharedCardInfo);
+    
+    client.close();
+    
+    if (insertionResult.acknowledged && insertionResult.insertedId) {
+      res.json({ success: true, message: 'Card shared successfully' });
+    } else {
+      res.json({ success: false, message: 'Failed to share card' });
+    }
+  } catch (error) {
+    console.error('An error occurred:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while connecting' });
+    console.error('An error occurred while sharing the card:', error);
+    res.json({ success: false, message: 'Failed to share card' });
   }
 });
 
