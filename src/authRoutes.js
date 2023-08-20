@@ -308,4 +308,46 @@ router.post('/share-card', async (req, res) => {
   }
 });
 
+//Ruta za dohvacanje shareanih kartica za logged-in user (trazeci po friendId)
+router.get('/shared-cards/:friendId', async (req, res) => {
+  const friendId = req.params.friendId;
+
+  try {
+    console.log('Fetching shared card details for loggedInUser:', friendId);
+
+    const client = await connect();
+    const db = client.db('fipuzor');
+    const sharedCardsCollection = db.collection('shared_cards');
+    const cardsCollection = db.collection('cards');
+
+    //Pronadji karticu u cards kolekciji
+    const sharedCards = await sharedCardsCollection.find({ friendId: new ObjectId(friendId) }).toArray();
+
+    //Ako nema sharanih kartica, odgovori s praznom listom
+    if (sharedCards.length === 0) {
+      console.log('No shared cards found for friendId:', friendId);
+      client.close();
+      res.json({ success: true, sharedCards: [] });
+      return;
+    }
+
+    //Uzmi cardID pronadjene sharane kartice
+    const cardIds = sharedCards.map(card => card.cardId);
+
+    console.log('Card IDs to fetch details:', cardIds);
+
+    //Pronadji tu karticu u cards kolekciji
+    const cardDetails = await cardsCollection.find({ _id: { $in: cardIds } }).toArray();
+
+    console.log('Card details found:', cardDetails);
+
+    client.close();
+
+    res.json({ success: true, sharedCards: cardDetails });
+  } catch (error) {
+    console.error('An error occurred:', error);
+    res.status(500).json({ success: false, message: 'An error occurred while connecting' });
+  }
+});
+
 export default router;
