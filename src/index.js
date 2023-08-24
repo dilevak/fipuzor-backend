@@ -4,7 +4,7 @@ import cors from 'cors';
 
 const app = express(); // instanciranje aplikacije
 
-const allowedOrigins = ['http://localhost:8080', 'https://fipuzor.netlify.app']; //dodavanje jos origina po potrebi
+const allowedOrigins = ['http://localhost:8080', '*.netlify.app']; //dodavanje jos origina po potrebi
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
