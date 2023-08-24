@@ -4,7 +4,9 @@ import { createCard } from './cardController.js';
 //Bcrypt library za kriptiranje passworda
 //import bcrypt from 'bcrypt';
 //Bcryptjs library radi problema s bycryptom
-import bcrypt from 'bcryptjs';
+//import bcrypt from 'bcryptjs';
+const bcryptjs = require('bcryptjs');
+
 
 import { ObjectId } from 'mongodb'; // Add this import for ObjectId
 
