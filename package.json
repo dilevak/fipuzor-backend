@@ -2,6 +2,9 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "fipuzor-backend",
+  "engines": { 
+    "node": "8.9.4" 
+ },
   "main": "index.js",
   "scripts": {
     "build": "babel src -d build",
