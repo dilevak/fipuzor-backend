@@ -4,6 +4,8 @@
   "description": "fipuzor-backend",
   "main": "index.js",
   "scripts": {
+    "build": "babel src -d build",
+    "start": "node build/index.js",
     "serve": "nodemon --exec babel-node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

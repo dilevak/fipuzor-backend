@@ -14,7 +14,7 @@ app.use(cors({
 app.use(express.json()); // Middleware for parsing JSON request bodies
 app.use('/api', authRoutes); // Mount the authentication routes
 
-const port = 3000; // port na kojem će web server slušati
+const port = process.env.PORT; // port na kojem će web server slušati
 
 // Global unhandledRejection event handler
 process.on('unhandledRejection', (reason, promise) => {
