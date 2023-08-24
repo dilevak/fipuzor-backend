@@ -4,7 +4,7 @@ import cors from 'cors';
 
 const app = express(); // instanciranje aplikacije
 
-const allowedOrigins = ['http://localhost:8080', 'http://192.168.8.108:8080', '192.168.8.0/24', 'https://zesty-cactus-ad775e.netlify.app', '*.netlify.app']; //dodavanje jos origina po potrebi
+const allowedOrigins = ['http://localhost:8080', 'https://fipuzor.netlify.app']; //dodavanje jos origina po potrebi
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
