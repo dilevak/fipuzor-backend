@@ -2,7 +2,10 @@ import express from 'express';
 import connect from './db.js';
 import { createCard } from './cardController.js';
 //Bcrypt library za kriptiranje passworda
-import bcrypt from 'bcrypt';
+//import bcrypt from 'bcrypt';
+//Bcryptjs library radi problema s bycryptom
+import bcrypt from 'bcryptjs';
+
 import { ObjectId } from 'mongodb'; // Add this import for ObjectId
 
 
@@ -86,7 +89,7 @@ router.post('/login', async (req, res) => {
     const user = await usersCollection.findOne({ username });
 
     if (user) {
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await bcryptjs.compare(password, user.password);
       if (isPasswordValid) {
         console.log('Login successful for:', username);
         res.json({ success: true, userID: user._id, username: user.username });
@@ -129,7 +132,7 @@ router.post('/signup', async (req, res) => {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
     // Create a new user document
     const newUser = {
